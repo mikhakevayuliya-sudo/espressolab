@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EspressoLab 2.0 PRO — Интерактивный симулятор экстракции и тренажер бариста</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #0c0b0a;
+      --bg-panel: #161412;
+      --bg-card: #1f1c19;
+      --border: #2e2925;
+      --accent: #d48c46;
+      --accent-bright: #f5a65b;
+      --accent-glow: rgba(212, 140, 70, 0.25);
+      --text-main: #f3ede6;
+      --text-muted: #9c9288;
+      --success: #4cd97b;
+      --warning: #f5b041;
+      --danger: #e74c3c;
+      --info: #5dade2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: 'Unbounded', sans-serif;
+    }
+
+    /* Шапка и навигация */
+    header {
+      background: rgba(22, 20, 18, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #8e521b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 800;
+      color: #0c0b0a;
+      font-size: 18px;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .mode-switcher {
+      display: flex;
+      background: var(--bg-main);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px;
+      padding: 8px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #0c0b0a;
+      font-weight: 700;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-action {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action:hover {
+      border-color: var(--accent);
+      background: #27231f;
+    }
+
+    /* Панель Академии / Экзамена */
+    #examBanner {
+      display: none;
+      background: linear-gradient(90deg, #1f1710, #291d12, #1f1710);
+      border-bottom: 1px solid var(--accent);
+      padding: 14px 24px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    #examBanner.visible {
+      display: flex;
+    }
+
+    .quest-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .quest-badge {
+      display: inline-block;
+      background: rgba(212, 140, 70, 0.2);
+      color: var(--accent-bright);
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      width: fit-content;
+      text-transform: uppercase;
+    }
+
+    .quest-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .quest-target {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .exam-stats {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .stat-pill {
+      background: rgba(12, 11, 10, 0.7);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-pill span {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .stat-pill strong {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 15px;
+      color: var(--accent-bright);
+    }
+
+    /* Основная сетка */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr 410px;
+      gap: 18px;
+      padding: 18px 24px;
+      max-width: 1680px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1320px) {
+      .main-grid {
+        grid-template-columns: 340px 1fr;
+      }
+      .col-right {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+      .col-right {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent-bright);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    /* Контролы и слайдеры */
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .control-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 12px;
+      color: var(--accent-bright);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #2b2623;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-bright);
+      cursor: pointer;
+      border: 2px solid #0c0b0a;
+      box-shadow: 0 0 8px var(--accent-glow);
+      transition: transform 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .grind-scale {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .segmented-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .seg-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 6px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .seg-btn.active {
+      background: rgba(212, 140, 70, 0.18);
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .puck-prep-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-sw {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #332e2a;
+      transition: 0.25s;
+      border-radius: 22px;
+    }
+
+    .slider-sw:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--text-main);
+      transition: 0.25s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider-sw {
+      background-color: var(--accent);
+    }
+
+    input:checked + .slider-sw:before {
+      transform: translateX(18px);
+      background-color: #0c0b0a;
+    }
+
+    .presets-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .preset-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .preset-chip:hover {
+      color: var(--text-main);
+      border-color: var(--accent);
+    }
+
+    /* Центральная станция пролива */
+    .station-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      background: radial-gradient(circle at 50% 35%, #241e19 0%, #141210 75%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+    }
+
+    .telemetry-bar {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .metric-card {
+      background: rgba(12, 11, 10, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .metric-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    /* Визуал холдера и чашки */
+    .machine-stage {
+      position: relative;
+      width: 280px;
+      height: 270px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .grouphead {
+      width: 160px;
+      height: 28px;
+      background: linear-gradient(90deg, #3a3532, #6e6762, #3a3532);
+      border-radius: 6px 6px 2px 2px;
+      border-bottom: 3px solid #221f1d;
+    }
+
+    .portafilter {
+      width: 130px;
+      height: 34px;
+      background: linear-gradient(90deg, #252220, #4f4945, #252220);
+      border-radius: 0 0 28px 28px;
+      position: relative;
+      border-bottom: 3px solid #d48c46;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    }
+
+    .pf-handle {
+      position: absolute;
+      right: -95px;
+      top: 6px;
+      width: 100px;
+      height: 18px;
+      background: linear-gradient(180deg, #3d2314, #1f1109);
+      border-radius: 0 10px 10px 0;
+      transform: rotate(4deg);
+      border-left: 6px solid #777;
+    }
+
+    /* Струя и брызги ченнелинга */
+    .stream-area {
+      position: relative;
+      width: 120px;
+      height: 110px;
+      display: flex;
+      justify-content: center;
+      overflow: visible;
+    }
+
+    .main-stream {
+      width: 0px;
+      height: 100%;
+      background: linear-gradient(180deg, #4b230d, #9c5221, #d48c46);
+      border-radius: 4px;
+      opacity: 0;
+      transition: width 0.2s, opacity 0.2s;
+      box-shadow: 0 0 10px rgba(212, 140, 70, 0.4);
+    }
+
+    .channel-jet {
+      position: absolute;
+      top: 2px;
+      width: 2px;
+      height: 95px;
+      background: rgba(235, 185, 130, 0.75);
+      transform-origin: top center;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .jet-left {
+      left: 42%;
+      transform: rotate(22deg);
+    }
+
+    .jet-right {
+      right: 42%;
+      transform: rotate(-25deg);
+    }
+
+    @keyframes sputter {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.9; }
+    }
+
+    .channeling-active .jet-left {
+      animation: sputter 0.18s infinite;
+    }
+    .channeling-active .jet-right {
+      animation: sputter 0.24s infinite 0.07s;
+    }
+
+    .channel-warning-badge {
+      position: absolute;
+      top: 35px;
+      background: rgba(231, 76, 60, 0.9);
+      color: #fff;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: none;
+      white-space: nowrap;
+      box-shadow: 0 0 12px rgba(231, 76, 60, 0.6);
+    }
+
+    .channeling-active .channel-warning-badge {
+      display: block;
+    }
+
+    /* Чашка и весы */
+    .cup-glass {
+      width: 112px;
+      height: 76px;
+      border: 3px solid rgba(255, 255, 255, 0.28);
+      border-top: none;
+      border-radius: 0 0 36px 36px;
+      background: rgba(255, 255, 255, 0.04);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(2px);
+    }
+
+    .liquid-body {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(180deg, #3b1b0c 0%, #1c0b04 100%);
+      transition: height 0.15s linear;
+    }
+
+    .crema-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 0px;
+      background: linear-gradient(90deg, #b86b28, #e59b52, #b86b28);
+      transition: height 0.2s;
+    }
+
+    .acaia-scale {
+      width: 180px;
+      height: 22px;
+      background: #080707;
+      border: 1px solid #38332e;
+      border-radius: 5px;
+      margin-top: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 12px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      color: var(--success);
+    }
+
+    /* Ручной слайдер живого давления */
+    .live-pressure-dock {
+      width: 100%;
+      background: rgba(12, 11, 10, 0.85);
+      border: 1px dashed var(--accent);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 10px 0;
+      display: none;
+    }
+
+    .live-pressure-dock.visible {
+      display: block;
+    }
+
+    .brew-controls {
+      width: 100%;
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .btn-brew {
+      flex: 1;
+      background: linear-gradient(135deg, var(--accent-bright), #b86b25);
+      color: #0c0b0a;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-brew:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-brew.running {
+      background: linear-gradient(135deg, #e74c3c, #a93226);
+      color: #fff;
+    }
+
+    /* Графики Canvas */
+    .canvas-box {
+      width: 100%;
+      background: #100e0d;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 12px;
+    }
+
+    .canvas-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .legend-dots span {
+      margin-left: 10px;
+    }
+
+    /* Правая колонка: Аналитика, SCA, Вкус и Советник */
+    .analytics-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .advisor-card {
+      background: linear-gradient(145deg, #211c17, #171411);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .score-pill {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent-bright);
+    }
+
+    .advisor-text {
+      font-size: 12px;
+      color: var(--text-main);
+      line-height: 1.55;
+    }
+
+    .btn-autofix {
+      background: rgba(212, 140, 70, 0.16);
+      border: 1px solid var(--accent);
+      color: var(--accent-bright);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px;
+      cursor: pointer;
+      transition: 0.2s;
+      width: fit-content;
+    }
+
+    .btn-autofix:hover {
+      background: var(--accent);
+      color: #0c0b0a;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 165px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .history-item:hover {
+      border-color: var(--accent);
+    }
+
+    /* Уведомление */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent-bright);
+      color: #0c0b0a;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Верхняя панель -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">EL</div>
+      <div>
+        <span class="brand-title font-display">ESPRESSO LAB 2.0</span>
+        <span class="brand-sub">Симулятор экстракции и тренажер бариста</span>
+      </div>
+    </div>
+
+    <div class="mode-switcher">
+      <button class="mode-btn active" id="btnModeSandbox" type="button" onclick="switchMode('sandbox')">Лаборатория (PRO)</button>
+      <button class="mode-btn" id="btnModeExam" type="button" onclick="switchMode('exam')">Экзамен Шеф-Бариста</button>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-action" type="button" onclick="toggleSound()" id="soundBtn">🔊 Звук: ВКЛ</button>
+      <button class="btn-action" type="button" onclick="shareRecipe()">🔗 Поделиться шотом</button>
+    </div>
+  </header>
+
+  <!-- Баннер режима Экзамена -->
+  <section id="examBanner">
+    <div class="quest-info">
+      <span class="quest-badge" id="questRank">Уровень 1 • Стажер</span>
+      <div class="quest-title font-display" id="questTitle">Задание: Загрузка...</div>
+      <div class="quest-target" id="questDesc">Цель: Вытянуть баланс вкуса ≥ 84 баллов</div>
+    </div>
+    <div class="exam-stats">
+      <div class="stat-pill">
+        <span>Остаток зерна</span>
+        <strong id="beansLeftText">100.0 г</strong>
+      </div>
+      <div class="stat-pill">
+        <span>Выполнено</span>
+        <strong id="questsWonText">0 / 3</strong>
+      </div>
+      <button class="btn-action" type="button" onclick="initNewQuest()">🔄 Новая пачка зерна</button>
+    </div>
+  </section>
+
+  <!-- Основной интерфейс -->
+  <main class="main-grid">
+
+    <!-- ЛЕВАЯ КОЛОНКА: Настройки зерна, помола и подготовки таблетки -->
+    <div class="panel">
+      <div class="panel-title font-display">
+        <span>1. Паспорт зерна и Помол</span>
+        <span id="roastBadge" style="font-size:10px; color:var(--text-muted)">Specialty</span>
+      </div>
+
+      <!-- Обжарка -->
+      <div class="control-group">
+        <div class="control-header">
+          <span>Степень обжарки</span>
+        </div>
+        <div class="segmented-row" id="roastRow">
+          <button class="seg-btn" type="button" onclick="setRoast('light')">Светлая</button>
+          <button class="seg-btn active" type="button" onclick="setRoast('medium')">Средняя</button>
+          <button class="seg-btn" type="button" onclick="setRoast('dark')">Тёмная</button>
+        </div>
+      </div>
+
+      <!-- Свежесть зерна -->
+      <div class="control-group">
+        <div class="control-header">
+          <span>Свежесть (дней после обжарки)</span>
+          <span class="control-val" id="valDays">12 дн.</span>
+        </div>
+        <input type="range" id="inpDays" min="1" max="45" step="1" value="12" oninput="updateUI()">
+        <div class="grind-scale">
+          <span>1–4 дн. (Газ)</span>
+          <span>7–21 дн. (Пик)</span>
+          <span>45 дн. (Старый)</span>
+        </div>
+      </div>
+
+      <!-- Помол -->
+      <div class="control-group">
+        <div class="control-header">
+          <span>Размер помола</span>
+          <span class="control-val" id="valGrind">28 ед.</span>
+        </div>
+        <input type="range" id="inpGrind" min="5" max="70" step="1" value="28" oninput="updateUI()">
+        <div class="grind-scale">
+          <span>Мелкий</span>
+          <span>Зона эспрессо (20–36)</span>
+          <span>Крупный</span>
+        </div>
+      </div>
+
+      <!-- Дозировка и Целевой выход -->
+      <div class="control-group">
+        <div class="control-header">
+          <span>Дозировка в корзине (Dose)</span>
+          <span class="control-val" id="valDose">18.0 г</span>
+        </div>
+        <input type="range" id="inpDose" min="14" max="22" step="0.5" value="18" oninput="updateUI()">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Целевой выход напитка (Yield)</span>
+          <span class="control-val" id="valTarget">36.0 г</span>
+        </div>
+        <input type="range" id="inpTarget" min="20" max="65" step="1" value="36" oninput="updateUI()">
+      </div>
+
+      <!-- Подготовка таблетки (Puck Prep) -->
+      <div class="panel-title font-display" style="margin-top:4px;">
+        <span>2. Подготовка таблетки (Puck Prep)</span>
+      </div>
+      <div class="puck-prep-box">
+        <div class="toggle-row">
+          <span>Разравнивание иголками (WDT)</span>
+          <label class="switch">
+            <input type="checkbox" id="chkWdt" checked onchange="updateUI()">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <span>Идеально ровная темпировка</span>
+          <label class="switch">
+            <input type="checkbox" id="chkTamp" checked onchange="updateUI()">
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Температура и Профиль давления -->
+      <div class="panel-title font-display" style="margin-top:4px;">
+        <span>3. Профиль машины</span>
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Температура бойлера (PID)</span>
+          <span class="control-val" id="valTemp">93 °C</span>
+        </div>
+        <input type="range" id="inpTemp" min="88" max="96" step="1" value="93" oninput="updateUI()">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Базовое давление помпы</span>
+          <span class="control-val" id="valPressure">9.0 бар</span>
+        </div>
+        <input type="range" id="inpPressure" min="6" max="12" step="0.5" value="9" oninput="updateUI()">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Предсмачивание (Pre-infusion)</span>
+          <span class="control-val" id="valPreinf">3 сек</span>
+        </div>
+        <input type="range" id="inpPreinf" min="0" max="8" step="1" value="3" oninput="updateUI()">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Профиль давления</span>
+        </div>
+        <div class="segmented-row" id="profileRow">
+          <button class="seg-btn active" id="profFlat" type="button" onclick="setProfile('flat')">Статичный</button>
+          <button class="seg-btn" id="profLever" type="button" onclick="setProfile('lever')">Рычаг (9→5)</button>
+          <button class="seg-btn" id="profManual" type="button" onclick="setProfile('manual')">Ручной</button>
+        </div>
+      </div>
+
+      <!-- Быстрые пресеты -->
+      <div class="presets-grid" id="presetsBox">
+        <button class="preset-chip" type="button" onclick="applyPreset('classic')">Эталон 1:2</button>
+        <button class="preset-chip" type="button" onclick="applyPreset('ristretto')">Ристретто</button>
+        <button class="preset-chip" type="button" onclick="applyPreset('channel')">Без WDT (Пробой!)</button>
+        <button class="preset-chip" type="button" onclick="applyPreset('choke')">Затык</button>
+      </div>
+    </div>
+
+    <!-- ЦЕНТРАЛЬНАЯ КОЛОНКА: Станция пролива и живая телеметрия -->
+    <div class="station-wrap">
+      <div style="width:100%">
+        <div class="telemetry-bar">
+          <div class="metric-card">
+            <span class="metric-label">Таймер</span>
+            <div class="metric-value" id="dispTime">0.0 с</div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Вес в чашке</span>
+            <div class="metric-value" id="dispYield">0.0 г</div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Поток</span>
+            <div class="metric-value" id="dispFlow" style="color:var(--info)">0.0 г/с</div>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Давление</span>
+            <div class="metric-value" id="dispPress" style="color:var(--warning)">0.0 бар</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Сцена с группой, холдером и чашкой -->
+      <div class="machine-stage">
+        <div class="grouphead"></div>
+        <div class="portafilter">
+          <div class="pf-handle"></div>
+        </div>
+        <div class="stream-area" id="streamArea">
+          <div class="channel-warning-badge">⚡ ЧЕННЕЛИНГ (ПРОБОЙ)</div>
+          <div class="channel-jet jet-left"></div>
+          <div class="main-stream" id="mainStream"></div>
+          <div class="channel-jet jet-right"></div>
+        </div>
+        <div class="cup-glass">
+          <div class="liquid-body" id="liquidBody">
+            <div class="crema-layer" id="cremaLayer"></div>
+          </div>
+        </div>
+        <div class="acaia-scale">
+          <span>ACAIA LUNAR</span>
+          <span id="scaleRatio">1 : 0.0</span>
+        </div>
+      </div>
+
+      <!-- Живой ручной Paddle во время пролива -->
+      <div class="live-pressure-dock" id="manualPaddleDock">
+        <div class="control-header" style="margin-bottom:6px;">
+          <span>🎛 Рычаг давления (живой контроль)</span>
+          <span class="control-val" id="valLivePaddle">9.0 бар</span>
+        </div>
+        <input type="range" id="inpLivePaddle" min="2" max="11" step="0.5" value="9" oninput="document.getElementById('valLivePaddle').textContent = parseFloat(this.value).toFixed(1) + ' бар'">
+      </div>
+
+      <div class="brew-controls">
+        <button class="btn-brew" id="btnBrew" type="button" onclick="toggleBrew()">▶ ЗАПУСТИТЬ ЭКСТРАКЦИЮ</button>
+      </div>
+
+      <!-- Графики Canvas -->
+      <div class="canvas-box">
+        <div class="canvas-legend">
+          <span class="font-display" style="font-size:10px; color:var(--text-main)">ТЕЛЕМЕТРИЯ ПРОЛИВА</span>
+          <div class="legend-dots">
+            <span style="color:#d48c46">● Выход (г)</span>
+            <span style="color:#5dade2">● Поток (г/с)</span>
+            <span style="color:#4cd97b">● Давление (бар)</span>
+          </div>
+        </div>
+        <canvas id="telemetryCanvas" width="540" height="170" style="width:100%; height:170px;"></canvas>
+      </div>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА: Матрица SCA, Вкус, Советник и Журнал -->
+    <div class="panel col-right">
+      <div>
+        <div class="panel-title font-display">
+          <span>4. Карта SCA и Вкус</span>
+        </div>
+
+        <div class="analytics-tabs" style="margin-top:12px;">
+          <div class="canvas-box" style="margin-top:0; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">Матрица SCA (EY / TDS)</div>
+            <canvas id="scaCanvas" width="180" height="180" style="width:100%; max-width:175px;"></canvas>
+            <div id="scaStatsText" style="font-size:11px; font-weight:600; margin-top:4px; color:var(--accent-bright);">TDS: — | EY: —</div>
+          </div>
+
+          <div class="canvas-box" style="margin-top:0; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">Радар вкуса</div>
+            <canvas id="radarCanvas" width="180" height="180" style="width:100%; max-width:175px;"></canvas>
+            <div id="flavorVerdict" style="font-size:11px; font-weight:600; margin-top:4px;">Сделайте пролив</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- Советник бариста -->
+        <div class="advisor-card">
+          <div class="score-row">
+            <span class="font-display" style="font-size:11px; text-transform:uppercase;">Вердикт Шеф-Бариста</span>
+            <span class="score-pill" id="shotScore">— / 100</span>
+          </div>
+          <p class="advisor-text" id="advisorMsg">
+            Настройте параметры и запустите экстракцию для разбора чашки.
+          </p>
+          <button class="btn-autofix" id="btnAutoFix" style="display:none;" type="button" onclick="applyAutoFix()">✨ Авто-исправление</button>
+        </div>
+
+        <!-- Журнал шотов -->
+        <div>
+          <div class="panel-title font-display" style="margin-bottom:8px;">
+            <span>Журнал попыток</span>
+          </div>
+          <div class="history-list" id="historyList">
+            <div style="font-size:11px; color:var(--text-muted);">Пока нет сваренных шотов...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="toast">Ссылка скопирована!</div>
+
+  <script>
+    const state = {
+      mode: 'sandbox',
+      roast: 'medium',
+      days: 12,
+      grind: 28,
+      dose: 18.0,
+      target: 36.0,
+      wdt: true,
+      tamp: true,
+      temp: 93,
+      pressure: 9.0,
+      preinf: 3,
+      profile: 'flat',
+      soundOn: true,
+      isBrewing: false,
+      timer: null,
+      history: [],
+      lastAutoFix: null,
+      beansLeft: 100.0,
+      questsWon: 0,
+      currentQuest: null
+    };
+
+    let audioCtx = null;
+    let pumpOsc = null;
+    let pumpGain = null;
+    let telemetryPoints = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        loadFromUrlParams();
+        updateUI();
+        drawEmptyTelemetry();
+        drawScaChart(0, 0);
+        drawRadarChart([50, 50, 50, 50, 50]);
+      } catch (e) {
+        console.error("Init error:", e);
+      }
+    });
+
+    function switchMode(newMode) {
+      if (state.isBrewing) stopBrew(false);
+      state.mode = newMode;
+      const sb = document.getElementById('btnModeSandbox');
+      const ex = document.getElementById('btnModeExam');
+      if (sb) sb.classList.toggle('active', newMode === 'sandbox');
+      if (ex) ex.classList.toggle('active', newMode === 'exam');
+      
+      const banner = document.getElementById('examBanner');
+      if (banner) banner.classList.toggle('visible', newMode === 'exam');
+
+      const presets = document.getElementById('presetsBox');
+      if (presets) presets.style.display = newMode === 'exam' ? 'none' : 'flex';
+
+      if (newMode === 'exam' && !state.currentQuest) {
+        initNewQuest();
+      }
+    }
+
+    function initNewQuest() {
+      const quests = [
+        {
+          title: 'Эфиопия Иргачефф (Светлая обжарка)',
+          desc: 'Плотное зерно. Вытяните яркий шот с балансом ≥ 85 баллов.',
+          roast: 'light', days: 10, startGrind: 38, startTemp: 90, wdt: false
+        },
+        {
+          title: 'Бразилия Серрадо (Средняя обжарка)',
+          desc: 'Свежая обжарка (3 дня назад — газ CO₂). Соберите шот 1:2 с оценкой ≥ 85.',
+          roast: 'medium', days: 3, startGrind: 21, startTemp: 95, wdt: false
+        },
+        {
+          title: 'Итальянская классика (Тёмная обжарка)',
+          desc: 'Сделайте плотный ристретто при низкой температуре с оценкой ≥ 85.',
+          roast: 'dark', days: 16, startGrind: 34, startTemp: 95, wdt: true
+        }
+      ];
+
+      const q = quests[state.questsWon % quests.length];
+      state.currentQuest = q;
+      state.beansLeft = 100.0;
+
+      state.roast = q.roast;
+      state.days = q.days;
+      document.getElementById('inpDays').value = q.days;
+      document.getElementById('inpGrind').value = q.startGrind;
+      document.getElementById('inpTemp').value = q.startTemp;
+      document.getElementById('chkWdt').checked = q.wdt;
+      document.getElementById('chkTamp').checked = true;
+
+      setRoast(q.roast);
+      document.getElementById('questTitle').textContent = q.title;
+      document.getElementById('questDesc').textContent = q.desc;
+      updateExamHeader();
+      updateUI();
+      showToast('Новая пачка загружена!');
+    }
+
+    function updateExamHeader() {
+      const bl = document.getElementById('beansLeftText');
+      const qw = document.getElementById('questsWonText');
+      const qr = document.getElementById('questRank');
+      if (bl) bl.textContent = state.beansLeft.toFixed(1) + ' г';
+      if (qw) qw.textContent = `${state.questsWon} / 3`;
+      if (qr) {
+        const ranks = ['Уровень 1 • Стажер', 'Уровень 2 • Бариста', 'Уровень 3 • Шеф-Бариста', '🏆 Судья SCA'];
+        qr.textContent = ranks[Math.min(state.questsWon, 3)];
+      }
+    }
+
+    function setRoast(r) {
+      state.roast = r;
+      const btns = document.querySelectorAll('#roastRow .seg-btn');
+      if (btns && btns.length >= 3) {
+        btns[0].classList.toggle('active', r === 'light');
+        btns[1].classList.toggle('active', r === 'medium');
+        btns[2].classList.toggle('active', r === 'dark');
+      }
+      updateUI();
+    }
+
+    function setProfile(p) {
+      state.profile = p;
+      const pf = document.getElementById('profFlat');
+      const pl = document.getElementById('profLever');
+      const pm = document.getElementById('profManual');
+      if (pf) pf.classList.toggle('active', p === 'flat');
+      if (pl) pl.classList.toggle('active', p === 'lever');
+      if (pm) pm.classList.toggle('active', p === 'manual');
+
+      const dock = document.getElementById('manualPaddleDock');
+      if (dock) dock.classList.toggle('visible', p === 'manual');
+      updateUI();
+    }
+
+    function updateUI() {
+      try {
+        state.days = parseInt(document.getElementById('inpDays').value);
+        state.grind = parseInt(document.getElementById('inpGrind').value);
+        state.dose = parseFloat(document.getElementById('inpDose').value);
+        state.target = parseFloat(document.getElementById('inpTarget').value);
+        state.wdt = document.getElementById('chkWdt').checked;
+        state.tamp = document.getElementById('chkTamp').checked;
+        state.temp = parseInt(document.getElementById('inpTemp').value);
+        state.pressure = parseFloat(document.getElementById('inpPressure').value);
+        state.preinf = parseInt(document.getElementById('inpPreinf').value);
+
+        document.getElementById('valDays').textContent = `${state.days} дн.`;
+        document.getElementById('valGrind').textContent = `${state.grind} ед.`;
+        document.getElementById('valDose').textContent = `${state.dose.toFixed(1)} г`;
+        const ratio = (state.target / state.dose).toFixed(1);
+        document.getElementById('valTarget').textContent = `${state.target.toFixed(0)} г (1:${ratio})`;
+        document.getElementById('valTemp').textContent = `${state.temp} °C`;
+        document.getElementById('valPressure').textContent = `${state.pressure.toFixed(1)} бар`;
+        document.getElementById('valPreinf').textContent = `${state.preinf} сек`;
+      } catch (e) {}
+    }
+
+    function applyPreset(type) {
+      if (state.isBrewing) stopBrew(false);
+      if (type === 'classic') {
+        setRoast('medium');
+        document.getElementById('inpDays').value = 12;
+        document.getElementById('inpGrind').value = 28;
+        document.getElementById('inpDose').value = 18;
+        document.getElementById('inpTarget').value = 36;
+        document.getElementById('chkWdt').checked = true;
+        document.getElementById('chkTamp').checked = true;
+        document.getElementById('inpTemp').value = 93;
+        document.getElementById('inpPressure').value = 9;
+        document.getElementById('inpPreinf').value = 3;
+        setProfile('flat');
+      } else if (type === 'ristretto') {
+        setRoast('dark');
+        document.getElementById('inpDays').value = 14;
+        document.getElementById('inpGrind').value = 23;
+        document.getElementById('inpDose').value = 19;
+        document.getElementById('inpTarget').value = 28;
+        document.getElementById('chkWdt').checked = true;
+        document.getElementById('chkTamp').checked = true;
+        document.getElementById('inpTemp').value = 90;
+        setProfile('lever');
+      } else if (type === 'channel') {
+        setRoast('light');
+        document.getElementById('inpDays').value = 2;
+        document.getElementById('inpGrind').value = 25;
+        document.getElementById('chkWdt').checked = false;
+        document.getElementById('chkTamp').checked = false;
+      } else if (type === 'choke') {
+        document.getElementById('inpGrind').value = 10;
+        document.getElementById('inpDose').value = 20.5;
+      }
+      updateUI();
+    }
+
+    function startPumpSound() {
+      if (!state.soundOn) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        pumpOsc = audioCtx.createOscillator();
+        pumpGain = audioCtx.createGain();
+        pumpOsc.type = 'sawtooth';
+        pumpOsc.frequency.setValueAtTime(52, audioCtx.currentTime);
+        pumpGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        pumpOsc.connect(pumpGain);
+        pumpGain.connect(audioCtx.destination);
+        pumpOsc.start();
+      } catch (e) {}
+    }
+
+    function updatePumpSound(pressure) {
+      if (!pumpOsc || !pumpGain || !state.soundOn) return;
+      try {
+        pumpOsc.frequency.setTargetAtTime(48 + pressure * 2.2, audioCtx.currentTime, 0.1);
+        pumpGain.gain.setTargetAtTime(0.015 + (pressure / 12) * 0.035, audioCtx.currentTime, 0.1);
+      } catch (e) {}
+    }
+
+    function stopPumpSound() {
+      if (pumpOsc) {
+        try { pumpOsc.stop(); pumpOsc.disconnect(); } catch (e) {}
+        pumpOsc = null;
+      }
+    }
+
+    function toggleSound() {
+      state.soundOn = !state.soundOn;
+      const btn = document.getElementById('soundBtn');
+      if (btn) btn.textContent = state.soundOn ? '🔊 Звук: ВКЛ' : '🔇 Звук: ВЫКЛ';
+      if (!state.soundOn) stopPumpSound();
+    }
+
+    function toggleBrew() {
+      if (state.isBrewing) {
+        stopBrew(true);
+      } else {
+        startBrew();
+      }
+    }
+
+    function startBrew() {
+      updateUI();
+
+      if (state.mode === 'exam') {
+        if (state.beansLeft < state.dose) {
+          showToast('Недостаточно зерна! Нажмите «Новая пачка».');
+          return;
+        }
+        state.beansLeft = Math.max(0, state.beansLeft - state.dose);
+        updateExamHeader();
+      }
+
+      state.isBrewing = true;
+      telemetryPoints = [];
+      const brewBtn = document.getElementById('btnBrew');
+      if (brewBtn) {
+        brewBtn.textContent = '⏹ ОСТАНОВИТЬ ПРОЛИВ';
+        brewBtn.classList.add('running');
+      }
+      const liveP = document.getElementById('inpLivePaddle');
+      if (liveP) liveP.value = state.pressure;
+
+      let channelRisk = 0;
+      if (!state.wdt) channelRisk += 0.45;
+      if (!state.tamp) channelRisk += 0.45;
+      if (state.days <= 4) channelRisk += 0.25;
+      if (state.pressure >= 10.5) channelRisk += 0.2;
+
+      const hasChanneling = channelRisk >= 0.45;
+      const streamArea = document.getElementById('streamArea');
+      if (streamArea) streamArea.classList.toggle('channeling-active', false);
+
+      let t = 0;
+      let currentYield = 0;
+      startPumpSound();
+
+      state.timer = setInterval(() => {
+        t += 0.2;
+
+        let currentP = state.pressure;
+        if (t <= state.preinf) {
+          currentP = 2.2 + (t / Math.max(1, state.preinf)) * 1.2;
+        } else {
+          if (state.profile === 'lever') {
+            const progress = Math.min(1, currentYield / state.target);
+            currentP = state.pressure - progress * 4.0;
+          } else if (state.profile === 'manual') {
+            const liveEl = document.getElementById('inpLivePaddle');
+            currentP = liveEl ? parseFloat(liveEl.value) : state.pressure;
+          }
+        }
+
+        const roastResistance = state.roast === 'light' ? 0.88 : (state.roast === 'medium' ? 1.0 : 1.14);
+        const degasFactor = state.days < 5 ? 0.85 : (state.days > 28 ? 1.18 : 1.0);
+        const doseFactor = Math.pow(18 / state.dose, 1.45);
+        const grindFactor = Math.pow(state.grind / 28, 2.15);
+
+        let baseFlow = 1.48 * grindFactor * doseFactor * roastResistance * degasFactor * Math.pow(currentP / 9, 0.75);
+
+        if (hasChanneling && t > state.preinf + 1.2) {
+          if (streamArea) streamArea.classList.add('channeling-active');
+          baseFlow *= 1.55 + Math.sin(t * 5) * 0.25;
+          currentP = Math.max(4.5, currentP - 1.6);
+        }
+
+        let flow = 0;
+        if (t > state.preinf) {
+          const ramp = Math.min(1, (t - state.preinf) / 2.2);
+          flow = Math.max(0.08, baseFlow * ramp);
+          currentYield += flow * 0.2;
+        }
+
+        updatePumpSound(currentP);
+
+        const dt = document.getElementById('dispTime');
+        const dy = document.getElementById('dispYield');
+        const df = document.getElementById('dispFlow');
+        const dp = document.getElementById('dispPress');
+        const sr = document.getElementById('scaleRatio');
+
+        if (dt) dt.textContent = `${t.toFixed(1)} с`;
+        if (dy) dy.textContent = `${currentYield.toFixed(1)} г`;
+        if (df) df.textContent = `${flow.toFixed(1)} г/с`;
+        if (dp) dp.textContent = `${currentP.toFixed(1)} бар`;
+        if (sr) sr.textContent = `1 : ${(currentYield / state.dose).toFixed(1)}`;
+
+        const streamEl = document.getElementById('mainStream');
+        if (streamEl) {
+          if (flow > 0.05) {
+            streamEl.style.opacity = '1';
+            streamEl.style.width = Math.min(14, Math.max(2, flow * 3.5)) + 'px';
+          } else {
+            streamEl.style.opacity = '0';
+          }
+        }
+
+        const fillPercent = Math.min(92, (currentYield / 65) * 100);
+        const lb = document.getElementById('liquidBody');
+        if (lb) lb.style.height = `${fillPercent}%`;
+        
+        const cremaPx = state.days <= 25 ? Math.min(14, currentYield * 0.32) : 4;
+        const cl = document.getElementById('cremaLayer');
+        if (cl) cl.style.height = `${cremaPx}px`;
+
+        telemetryPoints.push({ t, y: currentYield, f: flow, p: currentP });
+        drawLiveTelemetry();
+
+        if (currentYield >= state.target || t >= 55) {
+          stopBrew(true, { duration: t, yield: currentYield, hadChanneling: hasChanneling });
+        }
+      }, 200);
+    }
+
+    function stopBrew(evaluate = true) {
+      clearInterval(state.timer);
+      state.isBrewing = false;
+      stopPumpSound();
+
+      const brewBtn = document.getElementById('btnBrew');
+      if (brewBtn) {
+        brewBtn.textContent = '▶ ЗАПУСТИТЬ ЭКСТРАКЦИЮ';
+        brewBtn.classList.remove('running');
+      }
+      const streamEl = document.getElementById('mainStream');
+      if (streamEl) streamEl.style.opacity = '0';
+      const streamArea = document.getElementById('streamArea');
+      if (streamArea) streamArea.classList.remove('channeling-active');
+
+      if (evaluate && telemetryPoints.length > 3) {
+        const last = telemetryPoints[telemetryPoints.length - 1];
+        const hadChanneling = (!state.wdt || !state.tamp || state.days <= 4);
+        analyzeShot(last.t, last.y, hadChanneling);
+      }
+    }
+
+    function analyzeShot(duration, finalYield, hadChanneling) {
+      const effectiveTime = Math.max(1, duration - state.preinf * 0.45);
+      const grindSurface = Math.pow(28 / state.grind, 0.68);
+      const tempFactor = 1 + (state.temp - 93) * 0.025;
+      const roastFactor = state.roast === 'light' ? 0.92 : (state.roast === 'medium' ? 1.0 : 1.08);
+      const timeFactor = Math.pow(effectiveTime / 24, 0.42);
+      const ratioFactor = Math.pow((finalYield / state.dose) / 2.0, 0.33);
+      const channelPenalty = hadChanneling ? 0.87 : 1.0;
+
+      let ey = 20.0 * grindSurface * tempFactor * roastFactor * timeFactor * ratioFactor * channelPenalty;
+      ey = Math.max(11, Math.min(27, ey));
+
+      let tds = (ey * state.dose) / Math.max(10, finalYield);
+      tds = Math.max(4, Math.min(16, tds));
+
+      const idealTemp = state.roast === 'light' ? 94 : (state.roast === 'medium' ? 93 : 90);
+      const tempDiff = state.temp - idealTemp;
+
+      let acidity = Math.min(100, Math.max(15, 55 + (20 - ey) * 7.5 - tempDiff * 2.5 + (hadChanneling ? 18 : 0)));
+      let bitterness = Math.min(100, Math.max(10, 45 + (ey - 20) * 8.5 + tempDiff * 3.5 + (hadChanneling ? 22 : 0)));
+      let sweetness = Math.min(100, Math.max(15, 92 - Math.abs(ey - 20.2) * 9.5 - Math.abs(tempDiff) * 3 - (hadChanneling ? 28 : 0)));
+      let body = Math.min(100, Math.max(20, (tds / 10) * 78));
+      let balance = Math.min(100, Math.max(10, Math.round(sweetness * 0.65 + (100 - Math.abs(acidity - bitterness)) * 0.35 - (hadChanneling ? 20 : 0))));
+
+      let score = Math.round(
+        100
+        - Math.abs(ey - 20.1) * 5.2
+        - Math.abs(duration - 28.5) * 1.15
+        - Math.abs(tempDiff) * 2.2
+        - (hadChanneling ? 22 : 0)
+      );
+      score = Math.max(25, Math.min(99, score));
+
+      drawScaChart(ey, tds);
+      drawRadarChart([acidity, sweetness, body, bitterness, balance]);
+
+      document.getElementById('scaStatsText').textContent = `TDS: ${tds.toFixed(1)}% | EY: ${ey.toFixed(1)}%`;
+      document.getElementById('shotScore').textContent = `${score} / 100`;
+
+      let advice = '';
+      let verdictShort = '';
+      let fix = { ...state };
+
+      if (hadChanneling) {
+        verdictShort = '⚡ Ченнелинг (Пробой таблетки)';
+        advice = 'Вода пробила каналы! Включите WDT, выровняйте темпировку и используйте зерно выдержкой 7–21 день.';
+        fix.wdt = true;
+        fix.tamp = true;
+        if (fix.days < 5) fix.days = 10;
+      } else if (ey < 18.2 || duration < 21) {
+        verdictShort = '🍋 Недоэкстракция (Кислый)';
+        advice = `Шот пролился быстро (${duration.toFixed(1)} с). Сделайте помол мельче или поднимите температуру.`;
+        fix.grind = Math.max(15, state.grind - 4);
+        fix.temp = idealTemp;
+      } else if (ey > 22.0 || duration > 37) {
+        verdictShort = '🔥 Переэкстракция (Горький)';
+        advice = `Слишком долгий пролив (${duration.toFixed(1)} с). Укрупните помол на 3–5 делений.`;
+        fix.grind = Math.min(50, state.grind + 4);
+        fix.temp = idealTemp;
+      } else if (Math.abs(tempDiff) >= 2) {
+        verdictShort = '🌡 Почти идеально';
+        advice = `Время отличное, но температура ${state.temp}°C не оптимальна. Установите ${idealTemp}°C.`;
+        fix.temp = idealTemp;
+      } else {
+        verdictShort = '🏆 Золотая чашка Specialty!';
+        advice = `Безупречный баланс! Время ${duration.toFixed(1)} с, выход ${finalYield.toFixed(0)} г, EY ${ey.toFixed(1)}%.`;
+      }
+
+      document.getElementById('flavorVerdict').textContent = verdictShort;
+      document.getElementById('advisorMsg').textContent = advice;
+
+      state.lastAutoFix = fix;
+      document.getElementById('btnAutoFix').style.display = score < 88 ? 'inline-block' : 'none';
+
+      if (state.mode === 'exam' && score >= 85) {
+        state.questsWon++;
+        updateExamHeader();
+        showToast(`🎉 Экзамен сдан (${score} баллов)!`);
+      }
+
+      saveShotToHistory({
+        timeStr: duration.toFixed(1),
+        yieldStr: finalYield.toFixed(0),
+        score,
+        ey: ey.toFixed(1),
+        tds: tds.toFixed(1),
+        snapshot: { ...state }
+      });
+    }
+
+    function applyAutoFix() {
+      if (!state.lastAutoFix) return;
+      const f = state.lastAutoFix;
+      document.getElementById('inpDays').value = f.days;
+      document.getElementById('inpGrind').value = f.grind;
+      document.getElementById('inpTemp').value = f.temp;
+      document.getElementById('chkWdt').checked = f.wdt;
+      document.getElementById('chkTamp').checked = f.tamp;
+      updateUI();
+      document.getElementById('btnAutoFix').style.display = 'none';
+      showToast('Настройки скорректированы!');
+    }
+
+    function saveShotToHistory(item) {
+      state.history.unshift(item);
+      if (state.history.length > 8) state.history.pop();
+
+      const container = document.getElementById('historyList');
+      if (!container) return;
+      container.innerHTML = '';
+      state.history.forEach((h, idx) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        const badgeColor = h.score >= 85 ? 'var(--success)' : (h.score >= 70 ? 'var(--warning)' : 'var(--danger)');
+        div.innerHTML = `
+          <span>#${state.history.length - idx} • ${h.snapshot.grind} ед | ${h.snapshot.dose}г→${h.yieldStr}г (${h.timeStr}с)</span>
+          <strong style="color:${badgeColor}">${h.score} б.</strong>
+        `;
+        div.onclick = () => {
+          const s = h.snapshot;
+          setRoast(s.roast);
+          document.getElementById('inpDays').value = s.days;
+          document.getElementById('inpGrind').value = s.grind;
+          document.getElementById('inpDose').value = s.dose;
+          document.getElementById('inpTarget').value = s.target;
+          document.getElementById('chkWdt').checked = s.wdt;
+          document.getElementById('chkTamp').checked = s.tamp;
+          document.getElementById('inpTemp').value = s.temp;
+          document.getElementById('inpPressure').value = s.pressure;
+          document.getElementById('inpPreinf').value = s.preinf;
+          setProfile(s.profile);
+          updateUI();
+          showToast('Рецепт загружен!');
+        };
+        container.appendChild(div);
+      });
+    }
+
+    function drawEmptyTelemetry() {
+      const canvas = document.getElementById('telemetryCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#25211e';
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 4; i++) {
+        const y = (canvas.height / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawLiveTelemetry() {
+      drawEmptyTelemetry();
+      const canvas = document.getElementById('telemetryCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (telemetryPoints.length < 2) return;
+
+      const maxT = Math.max(35, telemetryPoints[telemetryPoints.length - 1].t);
+      const maxY = 65;
+
+      const plotLine = (key, scale, color) => {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.2;
+        telemetryPoints.forEach((pt, idx) => {
+          const x = (pt.t / maxT) * canvas.width;
+          const y = canvas.height - (Math.min(maxY, pt[key] * scale) / maxY) * (canvas.height - 14) - 6;
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      };
+
+      plotLine('y', 1, '#d48c46');
+      plotLine('f', 10, '#5dade2');
+      plotLine('p', 4, '#4cd97b');
+    }
+
+    function drawScaChart(ey, tds) {
+      const canvas = document.getElementById('scaCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.strokeStyle = '#282320';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo((w / 5) * i, 0); ctx.lineTo((w / 5) * i, h);
+        ctx.moveTo(0, (h / 5) * i); ctx.lineTo(w, (h / 5) * i);
+        ctx.stroke();
+      }
+
+      const x1 = ((18 - 11) / 16) * w;
+      const x2 = ((22 - 11) / 16) * w;
+      const y1 = h - ((12 - 4) / 12) * h;
+      const y2 = h - ((8 - 4) / 12) * h;
+
+      ctx.fillStyle = 'rgba(76, 217, 123, 0.16)';
+      ctx.strokeStyle = '#4cd97b';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+      ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+      if (ey > 0 && tds > 0) {
+        const px = Math.max(8, Math.min(w - 8, ((ey - 11) / 16) * w));
+        const py = Math.max(8, Math.min(h - 8, h - ((tds - 4) / 12) * h));
+
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#f5a65b';
+        ctx.fill();
+        ctx.strokeStyle = '#0c0b0a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function drawRadarChart(values) {
+      const canvas = document.getElementById('radarCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2 + 4;
+      const r = 64;
+      const labels = ['Кислот', 'Сладость', 'Тело', 'Горьк', 'Баланс'];
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.strokeStyle = '#2c2723';
+      ctx.lineWidth = 1;
+      [0.35, 0.7, 1].forEach(step => {
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+          const x = cx + Math.cos(angle) * r * step;
+          const y = cy + Math.sin(angle) * r * step;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+      });
+
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+        const valR = (values[i] / 100) * r;
+        const x = cx + Math.cos(angle) * valR;
+        const y = cy + Math.sin(angle) * valR;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(212, 140, 70, 0.35)';
+      ctx.fill();
+      ctx.strokeStyle = '#f5a65b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#d8cfc6';
+      ctx.font = '9px Montserrat';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < 5; i++) {
+        const angle = (Math.PI * 2 * i) / 5 - Math.PI / 2;
+        const lx = cx + Math.cos(angle) * (r + 17);
+        const ly = cy + Math.sin(angle) * (r + 14);
+        ctx.fillText(labels[i], lx, ly);
+      }
+    }
+
+    function shareRecipe() {
+      updateUI();
+      const params = new URLSearchParams({
+        roast: state.roast,
+        days: state.days,
+        grind: state.grind,
+        dose: state.dose,
+        target: state.target,
+        wdt: state.wdt ? 1 : 0,
+        tamp: state.tamp ? 1 : 0,
+        temp: state.temp,
+        press: state.pressure,
+        preinf: state.preinf,
+        prof: state.profile
+      });
+      const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      navigator.clipboard.writeText(shareUrl).catch(() => {});
+      showToast('🔗 Ссылка скопирована!');
+    }
+
+    function loadFromUrlParams() {
+      const p = new URLSearchParams(window.location.search);
+      if (!p.has('grind')) return;
+      if (p.has('roast')) setRoast(p.get('roast'));
+      if (p.has('days')) document.getElementById('inpDays').value = p.get('days');
+      if (p.has('grind')) document.getElementById('inpGrind').value = p.get('grind');
+      if (p.has('dose')) document.getElementById('inpDose').value = p.get('dose');
+      if (p.has('target')) document.getElementById('inpTarget').value = p.get('target');
+      if (p.has('wdt')) document.getElementById('chkWdt').checked = p.get('wdt') === '1';
+      if (p.has('tamp')) document.getElementById('chkTamp').checked = p.get('tamp') === '1';
+      if (p.has('temp')) document.getElementById('inpTemp').value = p.get('temp');
+      if (p.has('press')) document.getElementById('inpPressure').value = p.get('press');
+      if (p.has('preinf')) document.getElementById('inpPreinf').value = p.get('preinf');
+      if (p.has('prof')) setProfile(p.get('prof'));
+      showToast('Рецепт загружен!');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
